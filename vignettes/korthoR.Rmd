@@ -1,0 +1,71 @@
+---
+title: "korthoR Vignette"
+author: "Kristian K Ullrich"
+date: "`r Sys.Date()`"
+abstract: >
+    korthoR calculates pairwise kmer jaccard distance between all sequences of a
+    AAStringSet 
+bibliography: bibliography.bib
+nocite: '@*'
+output: BiocStyle::html_document
+vignette: >
+    %\VignetteIndexEntry{korthoR Vignette}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+---
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+suppressPackageStartupMessages({
+    library(korthoR)
+    library(MSA2dist)
+    library(Biostrings)
+    library(ape)
+    library(dplyr)
+    library(reshape2)
+    })
+```
+
+# Introduction
+
+# Installation
+
+To install this package, start R (version "4.3.2") and enter:
+
+```
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install(
+    c(
+    "MSA2dist")
+)
+
+devtools::install_github("kullrich/korthoR", build_vignettes = TRUE, dependencies = TRUE)
+```
+
+# Load korthoR
+
+```{r}
+# load korthoR
+library(korthoR)
+# load example data
+data(hiv, package="MSA2dist")
+```
+
+# Count kmers of length 6 for all amino acids
+
+```{r}
+l <- hiv |>
+    MSA2dist::cds2aa() |>
+    korthoR::count_kmers(k=6)
+l
+```
+
+# Count kmers using multiple threads
+
+```{r}
+l <- hiv |>
+    MSA2dist::cds2aa() |>
+    korthoR::count_kmers(k=6, threads=2)
+l
+```
