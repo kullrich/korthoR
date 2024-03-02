@@ -1,5 +1,7 @@
 #ifndef kmer_utils_h
 #define kmer_utils_h
+#define RCPPTHREAD_OVERRIDE_COUT 1    // std::cout override
+#define RCPPTHREAD_OVERRIDE_CERR 1    // std::cerr override
 
 //#include <Rcpp.h>
 #include <RcppArmadillo.h>
@@ -59,9 +61,6 @@ Rcpp::List iterate_and_create_named_int_vecInt64(
   const std::vector<std::string> seqnames);
 std::map<std::string, std::vector<int>> combineMaps(
   const std::vector<std::map<std::string, int>>& maps);
-std::map<std::string, std::vector<std::vector<int>>> combineMapsTwo(
-  const std::vector<std::map<std::string, int>>& maps1,
-  const std::vector<std::map<std::string, int>>& maps2);
 std::map<std::int64_t, std::vector<int>> combineInt64Maps(
   const std::vector<std::map<std::int64_t, int>>& maps);
 std::map<std::string, int> vectorToMap(
@@ -98,14 +97,12 @@ std::vector<std::vector<double>> directJaccard(
   std::map<std::string, std::vector<int>>& map1,
   std::map<std::string, std::vector<int>>& map2,
   std::vector<std::vector<bool>> comparisonResults,
-  //arma::imat comparisonResults,
   const std::vector<std::vector<std::string>>& seq_q_kmers_sorted,
   const std::vector<std::vector<std::string>>& seq_t_kmers_sorted,
   const std::vector<std::vector<int>>& seq_q_kmers_counts_sorted,
   const std::vector<std::vector<int>>& seq_t_kmers_counts_sorted,
   const int k,
-  const double min_jaccard,
-  const int ncores);
+  const double min_jaccard);
 std::vector<std::vector<double>> directJaccardInt64(
   std::map<std::int64_t, std::vector<int>>& map1,
   std::map<std::int64_t, std::vector<int>>& map2,
@@ -115,8 +112,7 @@ std::vector<std::vector<double>> directJaccardInt64(
   const std::vector<std::vector<int>>& seq_q_kmers_counts_sorted,
   const std::vector<std::vector<int>>& seq_t_kmers_counts_sorted,
   const int k,
-  const double min_jaccard,
-  const int ncores);
+  const double min_jaccard);
 std::vector<std::string> removeUncommonKeys(
   std::map<std::string,
   std::vector<int>>& map1,
@@ -168,23 +164,34 @@ std::vector<double> getJaccardByIntegerVectorInt64(
   const int seq_q_i_idx,
   const int seq_t_i_idx,
   const int k);
-bool key_found(
-  const std::map<std::string, int>& small_map,
-  const std::map<std::string, int>& large_map);
-bool key_found2(
-  const std::map<std::string, int>& small_map,
-  const std::map<std::string, int>& large_map);
-std::vector<int> findHits(
+std::vector<int> findPairs(
   const std::map<std::string, int>& kmerMap_i,
   const std::map<std::string, std::vector<int>>& kmerMap);
-std::vector<std::vector<int>> findHits_sparse(
+std::vector<int> findPairsInt64(
+  const std::map<std::int64_t, int>& kmerMap_i,
+  const std::map<std::int64_t, std::vector<int>>& kmerMap);
+std::vector<std::vector<int>> findPairs_sparse(
   const std::map<std::string, std::vector<int>>& kmerMap_short,
   const std::map<std::string, std::vector<int>>& kmerMap_long,
   const int n);
-std::map<std::string, std::vector<int>> getSubset(
+std::vector<std::vector<int>> findPairsInt64_sparse(
+  const std::map<std::int64_t, std::vector<int>>& kmerMap_short,
+  const std::map<std::int64_t, std::vector<int>>& kmerMap_long,
+  const int n);
+std::map<std::string, std::vector<int>> getSubsetMap(
     const std::map<std::string, std::vector<int>>& originalMap,
     int n);
-std::vector<std::pair<int, int>> flatten(
+std::map<std::int64_t, std::vector<int>> getSubsetInt64Map(
+    const std::map<std::int64_t, std::vector<int>>& originalMap,
+    int n);
+std::vector<std::set<int>> getCandidates(
   const std::vector<std::vector<int>>& vec);
+std::vector<std::pair<int, int>> flatten2pairs(
+  const std::vector<std::vector<int>>& vec);
+std::tuple<std::vector<int>, std::vector<int>> flatten2tuple(
+  const std::vector<std::vector<int>>& vec);
+std::vector<std::vector<int>> transposeTQ(
+  const std::vector<std::vector<int>>& matrix,
+  const int n);
 
 #endif // kmer_utils_h

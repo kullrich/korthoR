@@ -1,3 +1,5 @@
+#define RCPPTHREAD_OVERRIDE_COUT 1    // std::cout override
+#define RCPPTHREAD_OVERRIDE_CERR 1    // std::cerr override
 //#include <Rcpp.h>
 #include <RcppArmadillo.h>
 #include <RcppThread.h>
@@ -19,7 +21,10 @@ using namespace Rcpp;
 //' @examples
 //' ## load example sequence data
 //' data("hiv", package="MSA2dist")
-//' h <- hiv |> MSA2dist::cds2aa() |> as.character()
+//' h <- hiv |>
+//'     MSA2dist::subString(s=1, e=12) |>
+//'     MSA2dist::cds2aa() |>
+//'     as.character()
 //' l <- korthoR::rcpp_count_mers(
 //'     aavector=h,
 //'     ncores=1)

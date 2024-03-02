@@ -1,9 +1,8 @@
-korthoR - kmer jaccard distance in R
-=========
+# korthoR <a href="https://github.com/kullrich/korthoR"><img src="man/figures/logo.png" align="right" height="160" /></a>
 
-# korthoR - Description
+`korthoR` calculates pairwise kmer jaccard distance between all sequences of an `AAStringSet`.
 
-korthoR calculates pairwise kmer jaccard distance between all sequences of an AAStringSet
+## Installation instructions
 
 ## R specific installation prerequisites
 

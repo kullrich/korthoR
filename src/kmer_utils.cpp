@@ -1,3 +1,5 @@
+#define RCPPTHREAD_OVERRIDE_COUT 1    // std::cout override
+#define RCPPTHREAD_OVERRIDE_CERR 1    // std::cerr override
 //#include <Rcpp.h>
 #include <RcppArmadillo.h>
 #include <RcppThread.h>
@@ -228,29 +230,6 @@ std::map<std::string, std::vector<int>> combineMaps(
   return combinedMap;
 }
 
-std::map<std::string, std::vector<std::vector<int>>> combineMapsTwo(
-  const std::vector<std::map<std::string, int>>& maps1,
-  const std::vector<std::map<std::string, int>>& maps2) {
-  std::map<std::string, std::vector<std::vector<int>>> combinedMap;
-  for (const std::map<std::string, int>& map1 : maps1) {
-    for (const auto& pair : map1) {
-      combinedMap[pair.first].resize(2);
-      for (const std::map<std::string, int>& map2 : maps2) {
-        try {
-          combinedMap[pair.first][1].push_back(map2.at(pair.first));
-        } catch (const std::out_of_range& e) {
-        }
-      }
-      if (combinedMap[pair.first][1].size() > 0) {
-        combinedMap[pair.first][0].push_back(pair.second);
-      } else {
-        combinedMap.erase(pair.first);
-      }
-    }
-  }
-  return combinedMap;
-}
-
 std::map<std::int64_t, std::vector<int>> combineInt64Maps(
   const std::vector<std::map<std::int64_t, int>>& maps) {
     std::map<std::int64_t, std::vector<int>> combinedInt64Map;
@@ -260,74 +239,6 @@ std::map<std::int64_t, std::vector<int>> combineInt64Maps(
     }
   }
   return combinedInt64Map;
-}
-
-std::vector<int> CountCommonAndUncommonAndSum(
-  const std::vector<std::string>& vec1,
-  const std::vector<std::string>& vec2,
-  const std::vector<int>& vec1_counts,
-  const std::vector<int>& vec2_counts) {
-  int i = 0;
-  int j = 0;
-  int common = 0;
-  int uncommon1 = 0;
-  int uncommon2 = 0;
-  int common1_sum = 0;
-  int common2_sum = 0;
-  int uncommon1_sum = 0;
-  int uncommon2_sum = 0;
-  std::vector<int> result(7);
-  while (i < vec1.size() && j < vec2.size()) {
-    if (vec1[i] < vec2[j]) {
-      uncommon1 += 1;
-      uncommon1_sum += vec1_counts[i];
-      ++i;
-    } else if (vec1[i] > vec2[j]) {
-      uncommon2 += 1;
-      uncommon2_sum += vec2_counts[j];
-      ++j;
-    } else {
-      common += 1;
-      common1_sum += vec1_counts[i];
-      common2_sum += vec2_counts[j];
-      ++i;
-      ++j;
-    }
-  }
-  for (; i < vec1.size(); ++i) {
-    uncommon1 += 1;
-    uncommon1_sum += vec1_counts[i];
-  }
-  for (; j < vec2.size(); ++j) {
-    uncommon2 += 1;
-    uncommon2_sum += vec2_counts[j];
-  }
-  result[0] = common;
-  result[1] = uncommon1;
-  result[2] = uncommon2;
-  result[3] = common1_sum;
-  result[4] = common2_sum;
-  result[5] = uncommon1_sum;
-  result[6] = uncommon2_sum;
-  return result;
-}
-
-std::vector<double> get_jaccard(
-  const int common,
-  const int uncommon1,
-  const int uncommon2,
-  const int k) {
-  std::vector<double> seqj_seqk_jaccard(3);
-  double jaccard;
-  double mash;
-  double ani;
-  jaccard = ( static_cast<double>(common) ) / ( common + uncommon1 + uncommon2 );
-  mash = -( 1/static_cast<double>(k) ) * std::log( ( 2 * jaccard ) / ( 1 + jaccard ) );
-  ani = 1 - mash;
-  seqj_seqk_jaccard[0] = jaccard;
-  seqj_seqk_jaccard[1] = mash;
-  seqj_seqk_jaccard[2] = ani;
-  return seqj_seqk_jaccard;
 }
 
 double get_jaccard_value(
@@ -373,9 +284,7 @@ std::vector<std::vector<double>> directJaccard(
   const std::vector<std::vector<int>>& seq_q_kmers_counts_sorted,
   const std::vector<std::vector<int>>& seq_t_kmers_counts_sorted,
   const int k,
-  const double min_jaccard,
-  const int ncores) {
-  //std::mutex mtx_distances;
+  const double min_jaccard) {
   std::vector<std::vector<double>> jaccard_distances;
   auto it1 = map1.begin();
   auto it2 = map2.begin();
@@ -399,11 +308,9 @@ std::vector<std::vector<double>> directJaccard(
                 seq_t_kmers_counts_sorted,
                 k);
               if (jaccard_distance_q_i_t_j[2] > min_jaccard) {
-                //std::lock_guard<std::mutex> lock(mtx_distances);
                 jaccard_distances.push_back(jaccard_distance_q_i_t_j);
                 comparisonResults[it1->second[q_i]][it2->second[t_j]] = true;
               } else {
-                //std::lock_guard<std::mutex> lock(mtx_distances);
                 comparisonResults[it1->second[q_i]][it2->second[t_j]] = true;
               }
             }
@@ -423,11 +330,9 @@ std::vector<std::vector<double>> directJaccard(
                 seq_t_kmers_counts_sorted,
                 k);
               if (jaccard_distance_q_i_t_j[2] > min_jaccard) {
-                //std::lock_guard<std::mutex> lock(mtx_distances);
                 jaccard_distances.push_back(jaccard_distance_q_i_t_j);
                 comparisonResults[it1->second[q_i]][it2->second[t_j]] = true;
               } else {
-                //std::lock_guard<std::mutex> lock(mtx_distances);
                 comparisonResults[it1->second[q_i]][it2->second[t_j]] = true;
               }
             }
@@ -451,9 +356,7 @@ std::vector<std::vector<double>> directJaccardInt64(
   const std::vector<std::vector<int>>& seq_q_kmers_counts_sorted,
   const std::vector<std::vector<int>>& seq_t_kmers_counts_sorted,
   const int k,
-  const double min_jaccard,
-  const int ncores) {
-  std::mutex mtx_distances;
+  const double min_jaccard) {
   std::vector<std::vector<double>> jaccard_distances;
   auto it1 = map1.begin();
   auto it2 = map2.begin();
@@ -477,11 +380,9 @@ std::vector<std::vector<double>> directJaccardInt64(
                 seq_t_kmers_counts_sorted,
                 k);
               if (jaccard_distance_q_i_t_j[2] > min_jaccard) {
-                std::lock_guard<std::mutex> lock(mtx_distances);
                 jaccard_distances.push_back(jaccard_distance_q_i_t_j);
                 comparisonResults[it1->second[q_i]][it2->second[t_j]] = true;
               } else {
-                std::lock_guard<std::mutex> lock(mtx_distances);
                 comparisonResults[it1->second[q_i]][it2->second[t_j]] = true;
               }
             }
@@ -501,11 +402,9 @@ std::vector<std::vector<double>> directJaccardInt64(
                 seq_t_kmers_counts_sorted,
                 k);
               if (jaccard_distance_q_i_t_j[2] > min_jaccard) {
-                std::lock_guard<std::mutex> lock(mtx_distances);
                 jaccard_distances.push_back(jaccard_distance_q_i_t_j);
                 comparisonResults[it1->second[q_i]][it2->second[t_j]] = true;
               } else {
-                std::lock_guard<std::mutex> lock(mtx_distances);
                 comparisonResults[it1->second[q_i]][it2->second[t_j]] = true;
               }
             }
@@ -518,70 +417,6 @@ std::vector<std::vector<double>> directJaccardInt64(
   }
   // Not need to process further
   return jaccard_distances;
-}
-
-std::vector<std::string> removeUncommonKeys(
-  std::map<std::string,
-  std::vector<int>>& map1,
-  std::map<std::string,
-  std::vector<int>>& map2) {
-  std::vector<std::string> common_kmers_q_t;
-  common_kmers_q_t.reserve(std::min(map1.size(), map2.size()));
-  std::vector<std::string> keys_to_erase_map1;
-  std::vector<std::string> keys_to_erase_map2;
-  auto it1 = map1.begin();
-  auto it2 = map2.begin();
-  while (it1 != map1.end() && it2 != map2.end()) {
-    if (it1->first < it2->first) {
-      keys_to_erase_map1.push_back(it1->first);
-      ++it1;
-    } else if (it2->first < it1->first) {
-      keys_to_erase_map2.push_back(it2->first);
-      ++it2;
-    } else {
-      common_kmers_q_t.push_back(it1->first);
-      ++it1;
-      ++it2;
-    }
-  }
-  // Remove remaining keys in map1
-  for (; it1 != map1.end(); ++it1) {
-    keys_to_erase_map1.push_back(it1->first);
-  }
-  // Remove remaining keys in map2
-  for (; it2 != map2.end(); ++it2) {
-    keys_to_erase_map2.push_back(it2->first);
-  }
-  // Erase marked keys
-  for (const auto& key : keys_to_erase_map1) {
-    map1.erase(key);
-  }
-  for (const auto& key : keys_to_erase_map2) {
-    map2.erase(key);
-  }
-  return common_kmers_q_t;
-}
-
-std::set<std::pair<int, int>> getPairs(
-  std::map<std::string, std::vector<int>>& map1,
-  std::map<std::string, std::vector<int>>& map2) {
-  std::set<std::pair<int, int>> pairs;
-  auto it1 = map1.begin();
-  auto it2 = map2.begin();
-  while (it1 != map1.end() && it2 != map2.end()) {
-    if (it1->first < it2->first) {
-    } else if (it2->first < it1->first) {
-    } else {
-      for (const auto& pq : it1->second) {
-        for (const auto& pt : it2->second) {
-          pairs.insert(std::make_pair(pq, pt));
-        }
-      }
-      ++it1;
-      ++it2;
-    }
-  }
-  return pairs;
 }
 
 void removeDuplicatePairs(
@@ -896,38 +731,7 @@ bool checkValueSparseImat(
   return sp_mat_logical(row, col) == 1;
 }
 
-bool key_found(
-  const std::map<std::string, int>& small_map,
-  const std::map<std::string, int>& large_map) {
-  for (const auto& entry : small_map) {
-    auto it = large_map.lower_bound(entry.first);
-    if (it != large_map.end() && !(large_map.key_comp()(entry.first, it->first))) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool key_found2(
-  const std::map<std::string, int>& small_map,
-  const std::map<std::string, int>& large_map) {
-  auto it1 = small_map.begin();
-  auto it2 = large_map.begin();
-  while (it1 != small_map.end() && it2 != large_map.end()) {
-    if (it1->first < it2->first) {
-      ++it1;
-    } else if (it2->first < it1->first) {
-      ++it2;
-    } else {
-      return true;
-      ++it1;
-      ++it2;
-    }
-  }
-  return false;
-}
-
-std::vector<int> findHits(
+std::vector<int> findPairs(
   const std::map<std::string, int>& kmerMap_i,
   const std::map<std::string, std::vector<int>>& kmerMap) {
   auto it1 = kmerMap_i.begin();
@@ -946,13 +750,46 @@ std::vector<int> findHits(
       ++it2;
     }
   }
-  std::set<int> kmerMap_i_hits_set(kmerMap_i_hits.begin(), kmerMap_i_hits.end());
-  std::vector<int> result(kmerMap_i_hits_set.size());
-  result = std::vector<int>(kmerMap_i_hits_set.begin(), kmerMap_i_hits_set.end());
+  std::vector<int> result;
+  if (!kmerMap_i_hits.empty()) {
+    std::set<int> kmerMap_i_hits_set(kmerMap_i_hits.begin(), kmerMap_i_hits.end());
+    std::vector<int> result(kmerMap_i_hits_set.size());
+    result = std::vector<int>(kmerMap_i_hits_set.begin(), kmerMap_i_hits_set.end());
+    return result;
+  }
   return result;
 }
 
-std::vector<std::vector<int>> findHits_sparse(
+std::vector<int> findPairsInt64(
+  const std::map<std::int64_t, int>& kmerMap_i,
+  const std::map<std::int64_t, std::vector<int>>& kmerMap) {
+  auto it1 = kmerMap_i.begin();
+  auto it2 = kmerMap.begin();
+  std::vector<int> kmerMap_i_hits;
+  while (it1 != kmerMap_i.end() && it2 != kmerMap.end()) {
+    if (it1->first < it2->first) {
+      ++it1;
+    } else if (it2->first < it1->first) {
+      ++it2;
+    } else {
+      for (const int& hit : it2->second) {
+        kmerMap_i_hits.push_back(hit);
+      }
+      ++it1;
+      ++it2;
+    }
+  }
+  std::vector<int> result;
+  if (!kmerMap_i_hits.empty()) {
+    std::set<int> kmerMap_i_hits_set(kmerMap_i_hits.begin(), kmerMap_i_hits.end());
+    std::vector<int> result(kmerMap_i_hits_set.size());
+    result = std::vector<int>(kmerMap_i_hits_set.begin(), kmerMap_i_hits_set.end());
+    return result;
+  }
+  return result;
+}
+
+std::vector<std::vector<int>> findPairs_sparse(
   const std::map<std::string, std::vector<int>>& kmerMap_short,
   const std::map<std::string, std::vector<int>>& kmerMap_long,
   const int n) {
@@ -976,14 +813,49 @@ std::vector<std::vector<int>> findHits_sparse(
   }
   std::vector<std::vector<int>> result(n);
   for (int i = 0; i < n; ++i) {
-    std::set<int> kmerMap_i_j_hits_set(kmerMap_i_j_hits[i].begin(), kmerMap_i_j_hits[i].end());
-    std::vector<int> result_i(kmerMap_i_j_hits_set.size());
-    result[i] = std::vector<int>(kmerMap_i_j_hits_set.begin(), kmerMap_i_j_hits_set.end());
+    if (!kmerMap_i_j_hits[i].empty()) {
+      std::set<int> kmerMap_i_j_hits_set(kmerMap_i_j_hits[i].begin(), kmerMap_i_j_hits[i].end());
+      std::vector<int> result_i(kmerMap_i_j_hits_set.size());
+      result[i] = std::vector<int>(kmerMap_i_j_hits_set.begin(), kmerMap_i_j_hits_set.end());
+    }
   }
   return result;
 }
 
-std::map<std::string, std::vector<int>> getSubset(
+std::vector<std::vector<int>> findPairsInt64_sparse(
+  const std::map<std::int64_t, std::vector<int>>& kmerMap_short,
+  const std::map<std::int64_t, std::vector<int>>& kmerMap_long,
+  const int n) {
+  auto it1 = kmerMap_short.begin();
+  auto it2 = kmerMap_long.begin();
+  std::vector<std::vector<int>> kmerMap_i_j_hits(n);
+  while (it1 != kmerMap_short.end() && it2 != kmerMap_long.end()) {
+    if (it1->first < it2->first) {
+      ++it1;
+    } else if (it2->first < it1->first) {
+      ++it2;
+    } else {
+      for (const int& i : it1->second) {
+        for (const int& j : it2->second) {
+          kmerMap_i_j_hits[i].push_back(j);
+        }
+      }
+      ++it1;
+      ++it2;
+    }
+  }
+  std::vector<std::vector<int>> result(n);
+  for (int i = 0; i < n; ++i) {
+    if (!kmerMap_i_j_hits[i].empty()) {
+      std::set<int> kmerMap_i_j_hits_set(kmerMap_i_j_hits[i].begin(), kmerMap_i_j_hits[i].end());
+      std::vector<int> result_i(kmerMap_i_j_hits_set.size());
+      result[i] = std::vector<int>(kmerMap_i_j_hits_set.begin(), kmerMap_i_j_hits_set.end());
+    }
+  }
+  return result;
+}
+
+std::map<std::string, std::vector<int>> getSubsetMap(
     const std::map<std::string, std::vector<int>>& originalMap,
     int n) {
     std::map<std::string, std::vector<int>> subsetMap;
@@ -998,12 +870,78 @@ std::map<std::string, std::vector<int>> getSubset(
     return subsetMap;
 }
 
-std::vector<std::pair<int, int>> flatten(
+std::map<std::int64_t, std::vector<int>> getSubsetInt64Map(
+    const std::map<std::int64_t, std::vector<int>>& originalMap,
+    int n) {
+    std::map<std::int64_t, std::vector<int>> subsetMap;
+    int count = 0;
+    for (const auto& pair : originalMap) {
+        if (count >= n) {
+            break;
+        }
+        subsetMap.insert(pair);
+        count++;
+    }
+    return subsetMap;
+}
+
+std::vector<std::pair<int, int>> flatten2pairs(
   const std::vector<std::vector<int>>& vec) {
   std::vector<std::pair<int, int>> result;
   for (int i = 0; i < vec.size(); ++i) {
     for (int j = 0; j < vec[i].size(); ++j) {
       result.push_back(std::make_pair(i, vec[i][j]));
+    }
+  }
+  return result;
+}
+
+std::tuple<std::vector<int>, std::vector<int>> flatten2tuple(
+  const std::vector<std::vector<int>>& vec) {
+  std::vector<int> result_i;
+  std::vector<int> result_j;
+  for (int i = 0; i < vec.size(); ++i) {
+    for (int j = 0; j < vec[i].size(); ++j) {
+      result_i.push_back(i);
+      result_j.push_back(vec[i][j]);
+    }
+  }
+  return std::make_tuple(result_i, result_j);
+}
+
+std::vector<std::set<int>> getCandidates(
+  const std::vector<std::vector<int>>& vec) {
+  std::set<int> candidatesRow;
+  std::set<int> candidatesCol;
+  std::set<int> candidatesCount;
+  int count = 0;
+  for (int i = 0; i < vec.size(); ++i) {
+    if (!vec[i].empty()) {
+      candidatesRow.insert(i);
+      for (int j = 0; j < vec[i].size(); ++j) {
+        candidatesCol.insert(vec[i][j]);
+        count += 1;
+      }
+    }
+  }
+  candidatesCount.insert(count);
+  std::vector<std::set<int>> result(3);
+  result[0] = candidatesRow;
+  result[1] = candidatesCol;
+  result[2] = candidatesCount;
+  return result;
+}
+
+std::vector<std::vector<int>> transposeTQ(
+  const std::vector<std::vector<int>>& matrix,
+  const int n) {
+  std::vector<std::vector<int>> result(n);
+  size_t numRows = matrix.size();
+  for (size_t row = 0; row < numRows; ++row) {
+    if (!matrix[row].empty()) {
+      for (size_t col = 0; col < matrix[row].size(); ++col) {
+          result[col].push_back(row);
+      }
     }
   }
   return result;

@@ -87,8 +87,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_jaccard_sparse_Int64
-Rcpp::DataFrame rcpp_jaccard_sparse_Int64(Rcpp::List kmer_counts_q_Int64, Rcpp::List kmer_counts_t_Int64, int k, double min_jaccard, int ncores, bool debug);
-RcppExport SEXP _korthoR_rcpp_jaccard_sparse_Int64(SEXP kmer_counts_q_Int64SEXP, SEXP kmer_counts_t_Int64SEXP, SEXP kSEXP, SEXP min_jaccardSEXP, SEXP ncoresSEXP, SEXP debugSEXP) {
+Rcpp::DataFrame rcpp_jaccard_sparse_Int64(Rcpp::List kmer_counts_q_Int64, Rcpp::List kmer_counts_t_Int64, int k, double min_jaccard, double sparse_threshold, int sparse_n, int ncores, bool debug);
+RcppExport SEXP _korthoR_rcpp_jaccard_sparse_Int64(SEXP kmer_counts_q_Int64SEXP, SEXP kmer_counts_t_Int64SEXP, SEXP kSEXP, SEXP min_jaccardSEXP, SEXP sparse_thresholdSEXP, SEXP sparse_nSEXP, SEXP ncoresSEXP, SEXP debugSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -96,9 +96,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type kmer_counts_t_Int64(kmer_counts_t_Int64SEXP);
     Rcpp::traits::input_parameter< int >::type k(kSEXP);
     Rcpp::traits::input_parameter< double >::type min_jaccard(min_jaccardSEXP);
+    Rcpp::traits::input_parameter< double >::type sparse_threshold(sparse_thresholdSEXP);
+    Rcpp::traits::input_parameter< int >::type sparse_n(sparse_nSEXP);
     Rcpp::traits::input_parameter< int >::type ncores(ncoresSEXP);
     Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_jaccard_sparse_Int64(kmer_counts_q_Int64, kmer_counts_t_Int64, k, min_jaccard, ncores, debug));
+    rcpp_result_gen = Rcpp::wrap(rcpp_jaccard_sparse_Int64(kmer_counts_q_Int64, kmer_counts_t_Int64, k, min_jaccard, sparse_threshold, sparse_n, ncores, debug));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -141,7 +143,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_korthoR_rcpp_jaccard_a_b", (DL_FUNC) &_korthoR_rcpp_jaccard_a_b, 5},
     {"_korthoR_rcpp_jaccard_a_b_Int64", (DL_FUNC) &_korthoR_rcpp_jaccard_a_b_Int64, 5},
     {"_korthoR_rcpp_jaccard_sparse", (DL_FUNC) &_korthoR_rcpp_jaccard_sparse, 8},
-    {"_korthoR_rcpp_jaccard_sparse_Int64", (DL_FUNC) &_korthoR_rcpp_jaccard_sparse_Int64, 6},
+    {"_korthoR_rcpp_jaccard_sparse_Int64", (DL_FUNC) &_korthoR_rcpp_jaccard_sparse_Int64, 8},
     {"_korthoR_rcpp_jaccard_sparse_a_b", (DL_FUNC) &_korthoR_rcpp_jaccard_sparse_a_b, 6},
     {"_korthoR_rcpp_jaccard_sparse_a_b_Int64", (DL_FUNC) &_korthoR_rcpp_jaccard_sparse_a_b_Int64, 6},
     {NULL, NULL, 0}

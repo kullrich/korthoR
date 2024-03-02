@@ -46,7 +46,10 @@ rcpp_count_kmers <- function(aavector, k = 6L, ncores = 1L, aa2int = FALSE) {
 #' @examples
 #' ## load example sequence data
 #' data("hiv", package="MSA2dist")
-#' h <- hiv |> MSA2dist::cds2aa() |> as.character()
+#' h <- hiv |>
+#'     MSA2dist::subString(s=1, e=12) |>
+#'     MSA2dist::cds2aa() |>
+#'     as.character()
 #' l <- korthoR::rcpp_count_mers(
 #'     aavector=h,
 #'     ncores=1)
@@ -135,8 +138,8 @@ rcpp_jaccard_a_b_Int64 <- function(kmer_counts_q_Int64, kmer_counts_t_Int64, k =
 #' @param kmer_counts_t list [mandatory]
 #' @param k kmer length [default: 6]
 #' @param min_jaccard min jaccard distance to report [default: 0.01]
-#' @param sparse_threshold use sparse_n number subset to evaluate change search strategy [default: 0.1]
-#' @param sparse_n number of subset to get sparse threshold [default: 100]
+#' @param sparse_threshold use kmer subset to evaluate change search strategy [default: 0.1]
+#' @param sparse_n number of kmer subset to get sparse threshold [default: 20]
 #' @param ncores number of cores [default: 1]
 #' @param debug print to console [default: FALSE]
 #' @examples
@@ -159,7 +162,7 @@ rcpp_jaccard_a_b_Int64 <- function(kmer_counts_q_Int64, kmer_counts_t_Int64, k =
 #' @author Kristian K Ullrich
 NULL
 
-rcpp_jaccard_sparse <- function(kmer_counts_q, kmer_counts_t, k = 6L, min_jaccard = 0.01, sparse_threshold = 0.1, sparse_n = 100L, ncores = 1L, debug = FALSE) {
+rcpp_jaccard_sparse <- function(kmer_counts_q, kmer_counts_t, k = 6L, min_jaccard = 0.01, sparse_threshold = 0.1, sparse_n = 20L, ncores = 1L, debug = FALSE) {
     .Call(`_korthoR_rcpp_jaccard_sparse`, kmer_counts_q, kmer_counts_t, k, min_jaccard, sparse_threshold, sparse_n, ncores, debug)
 }
 
@@ -173,21 +176,25 @@ rcpp_jaccard_sparse <- function(kmer_counts_q, kmer_counts_t, k = 6L, min_jaccar
 #' @param kmer_counts_t_Int64 list [mandatory]
 #' @param k kmer length [default: 6]
 #' @param min_jaccard min jaccard distance to report [default: 0.01]
+#' @param sparse_threshold use kmer subset to evaluate change search strategy [default: 0.1]
+#' @param sparse_n number of kmer subset to get sparse threshold [default: 20]
 #' @param ncores number of cores [default: 1]
 #' @param debug print to console [default: FALSE]
 #' @examples
 #' ## load example sequence data
 #' data("hiv", package="MSA2dist")
-#' l <- hiv |>
+#' lint64 <- hiv |>
 #'     MSA2dist::cds2aa() |>
 #'     korthoR::count_kmers(
-#'         k=6,
-#'         aa2int=TRUE)
+#'     k=6,
+#'     aa2int=TRUE)
 #' d <- korthoR::rcpp_jaccard_sparse_Int64(
-#'     kmer_counts_q=l,
-#'     kmer_counts_t=l,
+#'     kmer_counts_q=lint64,
+#'     kmer_counts_t=lint64,
 #'     k=6,
 #'     min_jaccard=0.01,
+#'     sparse_threshold=0.1,
+#'     sparse_n=100,
 #'     ncores=1,
 #'     debug=FALSE)
 #' d
@@ -195,8 +202,8 @@ rcpp_jaccard_sparse <- function(kmer_counts_q, kmer_counts_t, k = 6L, min_jaccar
 #' @author Kristian K Ullrich
 NULL
 
-rcpp_jaccard_sparse_Int64 <- function(kmer_counts_q_Int64, kmer_counts_t_Int64, k = 6L, min_jaccard = 0.01, ncores = 1L, debug = FALSE) {
-    .Call(`_korthoR_rcpp_jaccard_sparse_Int64`, kmer_counts_q_Int64, kmer_counts_t_Int64, k, min_jaccard, ncores, debug)
+rcpp_jaccard_sparse_Int64 <- function(kmer_counts_q_Int64, kmer_counts_t_Int64, k = 6L, min_jaccard = 0.01, sparse_threshold = 0.1, sparse_n = 20L, ncores = 1L, debug = FALSE) {
+    .Call(`_korthoR_rcpp_jaccard_sparse_Int64`, kmer_counts_q_Int64, kmer_counts_t_Int64, k, min_jaccard, sparse_threshold, sparse_n, ncores, debug)
 }
 
 #' @useDynLib korthoR, .registration = TRUE

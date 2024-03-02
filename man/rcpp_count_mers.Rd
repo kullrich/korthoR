@@ -17,7 +17,10 @@ returns count all mers
 \examples{
 ## load example sequence data
 data("hiv", package="MSA2dist")
-h <- hiv |> MSA2dist::cds2aa() |> as.character()
+h <- hiv |>
+    MSA2dist::subString(s=1, e=12) |>
+    MSA2dist::cds2aa() |>
+    as.character()
 l <- korthoR::rcpp_count_mers(
     aavector=h,
     ncores=1)

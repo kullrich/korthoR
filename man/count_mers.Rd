@@ -21,6 +21,7 @@ AAString or an AAStringSet
 \examples{
 data(hiv, package="MSA2dist")
 l <- hiv |>
+    MSA2dist::subString(s=1, e=12) |>
     MSA2dist::cds2aa() |>
     korthoR::count_mers()
 l

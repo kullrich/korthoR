@@ -8,11 +8,14 @@
 #' @param kmer_counts_t kmer_counts
 #' @param k kmer length [default: 6]
 #' @param min_jaccard min jaccard distance to report [default: 0.01]
+#' @param sparse_threshold use kmer subset to evaluate change search strategy
+#' [default: 0.1]
+#' @param sparse_n number of kmer subset to get sparse threshold [default: 20]
 #' @param use_rcpp use rcpp jaccard distance calculation[ default: TRUE]
 #' @param use_sparse use rcpp sparse approach [default: TRUE]
 #' @param threads number of parallel threads [default: 1]
-#' @param num_per_chunk_q specify max number per chunk q [default: 100]
-#' @param num_per_chunk_t specify max number per chunk t [default: 1000]
+#' @param num_per_chunk_q specify max number per chunk q [default: 50000]
+#' @param num_per_chunk_t specify max number per chunk t [default: 50000]
 #' @param aa2int convert aa to Int64 [default: FALSE]
 #' @return \code{data.frame}
 #' @importFrom foreach foreach %do% %dopar%
@@ -32,38 +35,63 @@
 #'     k=6,
 #'     min_jaccard=0.01)
 #' df
-#' # to use multiple threads
-#' #df <- korthoR::get_jaccard_a_b(
-#' #    kmer_counts_q=l,
-#' #    kmer_counts_t=l,
-#' #    k=6,
-#' #    min_jaccard=0.01,
-#' #    threads=2)
-#' #df
-#' # to use multiple threads and change chunk size
-#' #df <- korthoR::get_jaccard_a_b(
-#' #    kmer_counts_q=l,
-#' #    kmer_counts_t=l,
-#' #    k=6,
-#' #    min_jaccard=0.01,
-#' #    threads=2,
-#' #    num_per_chunk=5)
-#' #df
-#' # to use Int64 kmers
-#' # lint64 <- hiv |>
-#' #     MSA2dist::cds2aa() |>
-#' #     korthoR::count_kmers(
-#' #     k=6,
-#' #     aa2int=TRUE)
-#' #df <- korthoR::get_jaccard_a_b(
-#' #    kmer_counts_q=lint64,
-#' #    kmer_counts_t=lint64,
-#' #    k=6,
-#' #    min_jaccard=0.01,
-#' #    threads=2,
-#' #    num_per_chunk=5,
-#' #    aa2int=TRUE)
-#' #df
+#' # to use Int64 kmers;
+#' # use:
+#' # count_kmers(..., aa2int=TRUE);
+#' # change:
+#' # get_jaccard_a_b(..., aa2int=TRUE)
+#' lint64 <- hiv |>
+#'      MSA2dist::cds2aa() |>
+#'      korthoR::count_kmers(
+#'      k=6,
+#'      aa2int=TRUE)
+#' df <- korthoR::get_jaccard_a_b(
+#'     kmer_counts_q=lint64,
+#'     kmer_counts_t=lint64,
+#'     k=6,
+#'     min_jaccard=0.01,
+#'     threads=2,
+#'     aa2int=TRUE)
+#' df
+#' # to use multiple threads;
+#' # change:
+#' # get_jaccard_a_b(..., threads=2)
+#' df <- korthoR::get_jaccard_a_b(
+#'     kmer_counts_q=l,
+#'     kmer_counts_t=l,
+#'     k=6,
+#'     min_jaccard=0.01,
+#'     threads=2)
+#' df
+#' # to change chunk size;
+#' # change:
+#' # get_jaccard_a_b(..., num_per_chunk_q; num_per_chunk_t)
+#' df <- korthoR::get_jaccard_a_b(
+#'     kmer_counts_q=l,
+#'     kmer_counts_t=l,
+#'     k=6,
+#'     min_jaccard=0.01,
+#'     threads=2,
+#'     num_per_chunk_q=2,
+#'     num_per_chunk_t=5)
+#' df
+#' # to force all vs all calculation;
+#' # change:
+#' # get_jaccard_a_b(..., use_sparse=FALSE)
+#' lint64 <- hiv |>
+#'      MSA2dist::cds2aa() |>
+#'      korthoR::count_kmers(
+#'      k=6,
+#'      aa2int=TRUE)
+#' df <- korthoR::get_jaccard_a_b(
+#'     kmer_counts_q=lint64,
+#'     kmer_counts_t=lint64,
+#'     k=6,
+#'     min_jaccard=0.01,
+#'     use_sparse=FALSE,
+#'     threads=2,
+#'     aa2int=TRUE)
+#' df
 #' @export get_jaccard_a_b
 #' @author Kristian K Ullrich
 
@@ -72,11 +100,13 @@ get_jaccard_a_b <- function(
     kmer_counts_t,
     k=6,
     min_jaccard=0.01,
+    sparse_threshold=0.1,
+    sparse_n=20,
     use_rcpp=TRUE,
     use_sparse=TRUE,
     threads=1,
-    num_per_chunk_q=100,
-    num_per_chunk_t=1000,
+    num_per_chunk_q=50000,
+    num_per_chunk_t=50000,
     aa2int=FALSE) {
     stopifnot("Error: k needs to be in a range of min 2 to max 12"=
         k %in% seq(from=2, to=12))
@@ -191,7 +221,7 @@ get_jaccard_a_b <- function(
                 } else {
                     if (aa2int) {
                         q_chunk_t_chunk_OUT <-
-                            korthoR::rcpp_jaccard_sparse_a_b_Int64(
+                            korthoR::rcpp_jaccard_sparse_Int64(
                             kmer_counts_q_Int64=q_chunk,
                             kmer_counts_t_Int64=t_chunk,
                             k=k,
@@ -199,11 +229,13 @@ get_jaccard_a_b <- function(
                             ncores=threads,
                             debug=FALSE)
                     } else {
-                        q_chunk_t_chunk_OUT <- korthoR::rcpp_jaccard_sparse_a_b(
+                        q_chunk_t_chunk_OUT <- korthoR::rcpp_jaccard_sparse(
                             kmer_counts_q=q_chunk,
                             kmer_counts_t=t_chunk,
                             k=k,
                             min_jaccard=min_jaccard,
+                            sparse_threshold=sparse_threshold,
+                            sparse_n=sparse_n,
                             ncores=threads,
                             debug=FALSE)
                     }

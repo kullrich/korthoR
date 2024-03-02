@@ -12,9 +12,9 @@
 
 \item{min_jaccard}{min jaccard distance to report [default: 0.01]}
 
-\item{sparse_threshold}{use sparse_n number subset to evaluate change search strategy [default: 0.1]}
+\item{sparse_threshold}{use kmer subset to evaluate change search strategy [default: 0.1]}
 
-\item{sparse_n}{number of subset to get sparse threshold [default: 100]}
+\item{sparse_n}{number of kmer subset to get sparse threshold [default: 20]}
 
 \item{ncores}{number of cores [default: 1]}
 

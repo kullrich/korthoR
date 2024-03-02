@@ -1,3 +1,5 @@
+#define RCPPTHREAD_OVERRIDE_COUT 1    // std::cout override
+#define RCPPTHREAD_OVERRIDE_CERR 1    // std::cerr override
 //#include <Rcpp.h>
 #include <RcppArmadillo.h>
 #include <RcppThread.h>
@@ -70,6 +72,7 @@ Rcpp::DataFrame rcpp_jaccard_sparse_a_b(
   //create a 2D boolean array to check if a comparison has already been done
   std::vector<std::vector<bool>> comparisonResults(nseq_q, std::vector<bool>(nseq_t, false));
   //create vector to keep separate maps
+  auto start_QkmerMap = std::chrono::steady_clock::now();
   std::vector<std::map<std::string, int>> kmerMap_qs(nseq_q);
   kmerMap_qs.resize(nseq_q);
   RcppThread::parallelFor(0, nseq_q, [&] (int q_i) {
@@ -83,7 +86,15 @@ Rcpp::DataFrame rcpp_jaccard_sparse_a_b(
   }, ncores);
   //combine maps
   kmerMap_q = combineMaps(kmerMap_qs);
+  auto end_QkmerMap = std::chrono::steady_clock::now();
+  auto duration_QkmerMap = std::chrono::duration_cast<std::chrono::milliseconds>(end_QkmerMap - start_QkmerMap);
+  if (debug) {
+    std::cout << "Time taken: QkmerMap creation " << duration_QkmerMap.count() << " milliseconds" << std::endl;
+    std::cout << "QkmerMap_n size: " << kmerMap_qs.size() << std::endl;
+    std::cout << "number of kmers QkmerMap: " << kmerMap_q.size() << std::endl;
+  }
   //create vector to keep separate maps
+  auto start_TkmerMap = std::chrono::steady_clock::now();
   std::vector<std::map<std::string, int>> kmerMap_ts(nseq_t);
   kmerMap_ts.resize(nseq_t);
   RcppThread::parallelFor(0, nseq_t, [&] (int t_i) {
@@ -97,7 +108,15 @@ Rcpp::DataFrame rcpp_jaccard_sparse_a_b(
   }, ncores);
   //combine maps
   kmerMap_t = combineMaps(kmerMap_ts);
+  auto end_TkmerMap = std::chrono::steady_clock::now();
+  auto duration_TkmerMap = std::chrono::duration_cast<std::chrono::milliseconds>(end_TkmerMap - start_TkmerMap);
+  if (debug) {
+    std::cout << "Time taken: TkmerMap creation " << duration_TkmerMap.count() << " milliseconds" << std::endl;
+    std::cout << "TkmerMap_n size: " << kmerMap_ts.size() << std::endl;
+    std::cout << "number of kmers TkmerMap: " << kmerMap_t.size() << std::endl;
+  }
   //direct jaccard
+  auto start_calcDist = std::chrono::steady_clock::now();
   std::vector<std::vector<double>> jaccard_distances;
   jaccard_distances = directJaccard(
     kmerMap_q,
@@ -108,8 +127,12 @@ Rcpp::DataFrame rcpp_jaccard_sparse_a_b(
     seq_q_kmers_counts_sorted,
     seq_t_kmers_counts_sorted,
     k,
-    min_jaccard,
-    ncores);
+    min_jaccard);
+  auto end_calcDist = std::chrono::steady_clock::now();
+  auto duration_calcDist = std::chrono::duration_cast<std::chrono::milliseconds>(end_calcDist - start_calcDist);
+  if (debug) {
+    std::cout << "Time taken: distance calculation " << duration_calcDist.count() << " milliseconds" << std::endl;
+  }
   //create output vectors
   std::vector<std::string> out_qname;
   std::vector<std::string> out_tname;

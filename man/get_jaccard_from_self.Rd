@@ -11,7 +11,8 @@ get_jaccard_from_self(
   use_rcpp = TRUE,
   use_sparse = TRUE,
   threads = 1,
-  num_per_chunk = 1000
+  num_per_chunk_q = 50000,
+  aa2int = FALSE
 )
 }
 \arguments{
@@ -27,7 +28,9 @@ get_jaccard_from_self(
 
 \item{threads}{number of parallel threads [default: 1]}
 
-\item{num_per_chunk}{specify max number per chunk [default: 1000]}
+\item{num_per_chunk_q}{specify max number per chunk q [default: 50000]}
+
+\item{aa2int}{convert aa to Int64 [default: FALSE]}
 }
 \value{
 \code{data.frame}
@@ -48,21 +51,58 @@ df <- korthoR::get_jaccard_from_self(
     k=6,
     min_jaccard=0.01)
 df
-# to use multiple threads
-#df <- korthoR::get_jaccard_from_self(
-#    kmer_counts_q=l,
-#    k=6,
-#    min_jaccard=0.01,
-#    threads=2)
-#df
-# to use multiple threads and change chunk size
-#df <- korthoR::get_jaccard_from_self(
-#    kmer_counts_q=l,
-#    k=6,
-#    min_jaccard=0.01,
-#    threads=2,
-#    num_per_chunk=5)
-#df
+# to use Int64 kmers;
+# use:
+# count_kmers(..., aa2int=TRUE);
+# change:
+# get_jaccard_from_self(..., aa2int=TRUE)
+lint64 <- hiv |>
+     MSA2dist::cds2aa() |>
+     korthoR::count_kmers(
+     k=6,
+     aa2int=TRUE)
+df <- korthoR::get_jaccard_from_self(
+    kmer_counts_q=lint64,
+    k=6,
+    min_jaccard=0.01,
+    aa2int=TRUE)
+df
+# to use multiple threads;
+# change:
+# get_jaccard_from_self(..., threads=2)
+df <- korthoR::get_jaccard_from_self(
+    kmer_counts_q=l,
+    k=6,
+    min_jaccard=0.01,
+    threads=2)
+df
+# to change chunk size;
+# change:
+# get_jaccard_from_self(..., num_per_chunk_q; num_per_chunk_t)
+df <- korthoR::get_jaccard_from_self(
+    kmer_counts_q=l,
+    k=6,
+    min_jaccard=0.01,
+    threads=2,
+    num_per_chunk_q=2)
+df
+# to force all vs all calculation;
+# change:
+# get_jaccard_from_self(..., use_sparse=FALSE)
+lint64 <- hiv |>
+     MSA2dist::cds2aa() |>
+     korthoR::count_kmers(
+     k=6,
+     aa2int=TRUE)
+df <- korthoR::get_jaccard_from_self(
+    kmer_counts_q=lint64,
+    k=6,
+    min_jaccard=0.01,
+    use_sparse=FALSE,
+    threads=2,
+    num_per_chunk_q=2,
+    aa2int=TRUE)
+df
 }
 \author{
 Kristian K Ullrich

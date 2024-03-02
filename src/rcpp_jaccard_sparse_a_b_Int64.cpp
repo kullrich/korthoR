@@ -1,3 +1,5 @@
+#define RCPPTHREAD_OVERRIDE_COUT 1    // std::cout override
+#define RCPPTHREAD_OVERRIDE_CERR 1    // std::cerr override
 //#include <Rcpp.h>
 #include <RcppArmadillo.h>
 #include <RcppThread.h>
@@ -134,8 +136,7 @@ Rcpp::DataFrame rcpp_jaccard_sparse_a_b_Int64(
     seq_q_kmers_counts_sorted,
     seq_t_kmers_counts_sorted,
     k,
-    min_jaccard,
-    ncores);
+    min_jaccard);
   /*
   //create vector to store common_kmers and remove from the maps
   std::vector<std::string> common_kmers_q_t;

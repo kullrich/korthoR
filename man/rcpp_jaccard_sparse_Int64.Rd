@@ -12,6 +12,10 @@
 
 \item{min_jaccard}{min jaccard distance to report [default: 0.01]}
 
+\item{sparse_threshold}{use kmer subset to evaluate change search strategy [default: 0.1]}
+
+\item{sparse_n}{number of kmer subset to get sparse threshold [default: 20]}
+
 \item{ncores}{number of cores [default: 1]}
 
 \item{debug}{print to console [default: FALSE]}
@@ -25,16 +29,18 @@ returns jaccard
 \examples{
 ## load example sequence data
 data("hiv", package="MSA2dist")
-l <- hiv |>
+lint64 <- hiv |>
     MSA2dist::cds2aa() |>
     korthoR::count_kmers(
-        k=6,
-        aa2int=TRUE)
+    k=6,
+    aa2int=TRUE)
 d <- korthoR::rcpp_jaccard_sparse_Int64(
-    kmer_counts_q=l,
-    kmer_counts_t=l,
+    kmer_counts_q=lint64,
+    kmer_counts_t=lint64,
     k=6,
     min_jaccard=0.01,
+    sparse_threshold=0.1,
+    sparse_n=100,
     ncores=1,
     debug=FALSE)
 d
