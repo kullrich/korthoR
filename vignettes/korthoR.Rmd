@@ -40,7 +40,9 @@ BiocManager::install(
     "MSA2dist")
 )
 
-devtools::install_github("kullrich/korthoR", build_vignettes = TRUE, dependencies = TRUE)
+devtools::install_github("kullrich/korthoR",
+    build_vignettes = TRUE,
+    dependencies = TRUE)
 ```
 
 # Load korthoR
@@ -57,7 +59,8 @@ data(hiv, package="MSA2dist")
 ```{r}
 l <- hiv |>
     MSA2dist::cds2aa() |>
-    korthoR::count_kmers(k=6)
+    korthoR::count_kmers(
+        k=6)
 l
 ```
 
@@ -66,6 +69,160 @@ l
 ```{r}
 l <- hiv |>
     MSA2dist::cds2aa() |>
-    korthoR::count_kmers(k=6, threads=2)
+    korthoR::count_kmers(
+        k=6,
+        threads=2)
 l
+```
+
+# Count kmers using multiple threads converting AA to Int64
+
+```{r}
+l <- hiv |>
+    MSA2dist::cds2aa() |>
+    korthoR::count_kmers(
+        k=6,
+        threads=2,
+        aa2int=TRUE)
+l
+```
+
+
+# Get jaccard distance (default: use_rcpp=TRUE, use_sparse=TRUE)
+
+```{r}
+system.time(d <- hiv |>
+    MSA2dist::cds2aa() |>
+    kortho::count_kmers(k=6) |>
+    kortho::get_jaccard_from_self(
+        k=6))
+d
+```
+
+# Get jaccard distance using multiple threads and rcpp
+
+```{r}
+system.time(d <- hiv |>
+    MSA2dist::cds2aa() |>
+    kortho::count_kmers(
+        k=6,
+        threads=2) |>
+    kortho::get_jaccard_from_self(
+        k=6,
+        threads=2))
+d
+```
+
+# Get jaccard distance using multiple threads and rcpp converting AA to Int64
+
+```{r}
+system.time(d <- hiv |>
+    MSA2dist::cds2aa() |>
+    korthoR::count_kmers(
+        k=6,
+        threads=2,
+        aa2int=TRUE) |>
+    korthoR::get_jaccard_from_self(
+        k=6,
+        threads=2,
+        aa2int=TRUE))
+d
+```
+
+# Get jaccard distance using multiple threads not sparse (brute force)
+
+```{r}
+system.time(d <- hiv |>
+    MSA2dist::cds2aa() |>
+    korthoR::count_kmers(
+        k=6,
+        threads=2) |>
+    korthoR::get_jaccard_from_self(
+        k=6,
+        use_rcpp = TRUE,
+        use_sparse = FALSE,
+        threads=2))
+d
+```
+
+# Get jaccard distance using multiple threads and foreach
+
+```{r}
+system.time(d <- hiv |>
+    MSA2dist::cds2aa() |>
+    korthoR::count_kmers(
+      k=6,
+      threads=2) |>
+    korthoR::get_jaccard_from_self(
+        k=6,
+        use_rcpp = FALSE,
+        use_sparse = FALSE,
+        threads=2))
+d
+```
+
+# Get bionjs tree
+
+```{r}
+data(hiv, package="MSA2dist")
+l <- hiv |>
+    MSA2dist::cds2aa() |>
+    korthoR::count_kmers(
+      k=6)
+d <- korthoR::get_jaccard_a_b(
+    kmer_counts_q=l,
+    kmer_counts_t=l,
+    k=6)
+t1 <- korthoR::get_bionjs_tree(
+    jaccard_df=d,
+    value="jaccard")
+t2 <- korthoR::get_bionjs_tree(
+    jaccard_df=d,
+    value="mash")
+t3 <- korthoR::get_bionjs_tree(
+    jaccard_df=d,
+    value="sumdist")
+par(mfrow=c(1,3))
+plot(t1, main="jaccard")
+plot(t2, main="mash")
+plot(t3, main="sumdist")
+```
+
+# Compare the proteins from *Pseudomonas aeruginosa PAO1* and *Pseudomonas fluorescens SBW25*
+
+```{r}
+# Download peptides
+PAO1 <- Biostrings::readAAStringSet("https://www.pseudomonas.com/downloads/pseudomonas/pgd_r_22_1/Pseudomonas_aeruginosa_PAO1_107/Pseudomonas_aeruginosa_PAO1_107.faa.gz")
+SBW25 <- Biostrings::readAAStringSet("https://www.pseudomonas.com/downloads/pseudomonas/pgd_r_22_1/Pseudomonas_fluorescens_SBW25_116/Pseudomonas_fluorescens_SBW25_116.faa.gz")
+# Count kmers using multiple threads converting AA to Int64
+l_PAO1_int64 <- kortho::count_kmers(
+  aa=PAO1,
+  k=6,
+  threads=8,
+  aa2int=TRUE)
+l_SBW25_int64 <- kortho::count_kmers(
+  aa=SBW25,
+  k=6,
+  threads=8,
+  aa2int=TRUE)
+# Get jaccard distance using multiple threads and rcpp converting AA to Int64
+system.time(df_PAO1_SBW25 <- kortho::get_jaccard_a_b(
+    kmer_counts_q=l_PAO1_int64,
+    kmer_counts_t=l_SBW25_int64,
+    k=6,
+    min_jaccard=0.01,
+    threads=8)
+)
+```
+
+# Cluster the proteins into orthologous groups
+
+# References
+
+<div id="refs"></div>
+
+# Session Info
+
+```{r sessionInfo, echo=TRUE}
+sessionInfo()
 ```

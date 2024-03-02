@@ -434,6 +434,8 @@ std::vector<double> getJaccardByIntegerVector(
   const int seq_q_i_idx,
   const int seq_t_i_idx,
   const int k) {
+  std::cout << "ni: " << seq_q_i_idx << std::endl;
+  std::cout << "mj: " << seq_t_i_idx << std::endl;
   std::vector<double> out(6);
   out[0] = static_cast<double>(seq_q_i_idx);
   out[1] = static_cast<double>(seq_t_i_idx);
@@ -935,13 +937,21 @@ std::vector<std::set<int>> getCandidates(
 std::vector<std::vector<int>> transposeTQ(
   const std::vector<std::vector<int>>& matrix,
   const int n) {
-  std::vector<std::vector<int>> result(n);
+  std::vector<std::vector<int>> transpose_matrix(n);
   size_t numRows = matrix.size();
   for (size_t row = 0; row < numRows; ++row) {
     if (!matrix[row].empty()) {
       for (size_t col = 0; col < matrix[row].size(); ++col) {
-          result[col].push_back(row);
+          transpose_matrix[matrix[row][col]].push_back(row);
       }
+    }
+  }
+  std::vector<std::vector<int>> result(n);
+  for (int i = 0; i < n; ++i) {
+    if (!transpose_matrix[i].empty()) {
+      std::set<int> result_set(transpose_matrix[i].begin(), transpose_matrix[i].end());
+      std::vector<int> result_i(result_set.size());
+      result[i] = std::vector<int>(result_set.begin(), result_set.end());
     }
   }
   return result;

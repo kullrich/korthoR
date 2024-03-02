@@ -176,12 +176,12 @@ Rcpp::DataFrame rcpp_jaccard_sparse(
     //transpose T_Q_hits to get Q_T_hits
     Q_T_pairs = transposeTQ(T_Q_pairs, n);
   }
-  std::vector<std::set<int>> candidatesQT;
-  candidatesQT = getCandidates(Q_T_pairs);
-  std::vector<int> candidatePairs_ni(candidatesQT[0].begin(), candidatesQT[0].end());
-  std::vector<int> candidatePairs_mj(candidatesQT[1].begin(), candidatesQT[1].end());
+  std::tuple<std::vector<int>, std::vector<int>> candidatePairs;
+  candidatePairs = flatten2tuple(Q_T_pairs);
+  std::vector<int> candidatePairs_ni = std::get<0>(candidatePairs);
+  std::vector<int> candidatePairs_mj = std::get<1>(candidatePairs);
   int candidatePairs_ni_mj_size;
-  candidatePairs_ni_mj_size = *candidatesQT[2].begin();
+  candidatePairs_ni_mj_size = candidatePairs_ni.size();
   auto end_getCandidates = std::chrono::steady_clock::now();
   auto duration_getCandidates = std::chrono::duration_cast<std::chrono::milliseconds>(end_getCandidates - start_getCandidates);
   if (debug) {
@@ -191,30 +191,21 @@ Rcpp::DataFrame rcpp_jaccard_sparse(
   }
   //calculate distances for each candidate pair
   auto start_calcDist = std::chrono::steady_clock::now();
-  std::vector<std::vector<std::vector<double>>> Qni_Tmj_distances(
-    candidatePairs_ni.size(),
-    std::vector<std::vector<double>>(
-      candidatePairs_mj.size(),
-      std::vector<double>(
-        6,
-        0.0)));
-  RcppThread::ThreadPool pool(ncores);
-  pool.parallelFor(0, candidatePairs_ni.size(), [&] (int ni) {
-    int Qni = candidatePairs_ni[ni];
-    std::vector<int>Qni_T_pairs(Q_T_pairs[Qni]);
-      pool.parallelFor(0, Qni_T_pairs.size(), [&, ni, Qni, Qni_T_pairs] (int mj) {
-      int Tmj = Qni_T_pairs[mj];
-      Qni_Tmj_distances[ni][mj]=getJaccardByIntegerVector(
-        Qkmers_sorted[Qni],
-        Tkmers_sorted[Tmj],
-        Qkmers_counts_sorted[Qni],
-        Tkmers_counts_sorted[Tmj],
-        Qni,
-        Tmj,
-        k);
-    });
-  });
-  pool.join();
+  std::vector<std::vector<double>> Qni_Tmj_distances(
+      candidatePairs_ni_mj_size,
+      std::vector<double>(6, 0.0));
+  RcppThread::parallelFor(0, candidatePairs_ni_mj_size, [&] (int ni_mj) {
+    int Qni = candidatePairs_ni[ni_mj];
+    int Tmj = candidatePairs_mj[ni_mj];
+    Qni_Tmj_distances[ni_mj]=getJaccardByIntegerVector(
+      Qkmers_sorted[Qni],
+      Tkmers_sorted[Tmj],
+      Qkmers_counts_sorted[Qni],
+      Tkmers_counts_sorted[Tmj],
+      Qni,
+      Tmj,
+      k);
+  }, ncores);
   auto end_calcDist = std::chrono::steady_clock::now();
   auto duration_calcDist = std::chrono::duration_cast<std::chrono::milliseconds>(end_calcDist - start_calcDist);
   if (debug) {
@@ -226,16 +217,14 @@ Rcpp::DataFrame rcpp_jaccard_sparse(
   std::vector<double> out_mash;
   std::vector<double> out_ani;
   std::vector<double> out_sumdist;
-  for (const auto& row : Qni_Tmj_distances) {
-    for (const auto& distances : row) {
-      if ( distances[2] > min_jaccard ) {
-        out_qname.push_back(seqnames_q[distances[0]]);
-        out_tname.push_back(seqnames_t[distances[1]]);
-        out_jaccard.push_back(distances[2]);
-        out_mash.push_back(distances[3]);
-        out_ani.push_back(distances[4]);
-        out_sumdist.push_back(distances[5]);
-      }
+  for (const auto& distances : Qni_Tmj_distances) {
+    if ( distances[2] > min_jaccard ) {
+      out_qname.push_back(seqnames_q[distances[0]]);
+      out_tname.push_back(seqnames_t[distances[1]]);
+      out_jaccard.push_back(distances[2]);
+      out_mash.push_back(distances[3]);
+      out_ani.push_back(distances[4]);
+      out_sumdist.push_back(distances[5]);
     }
   }
   //create Rcpp::DataFrame
@@ -246,6 +235,5 @@ Rcpp::DataFrame rcpp_jaccard_sparse(
   Rcpp::Named("q1t2_mash") = out_mash,
   Rcpp::Named("q1t2_ani") = out_ani,
   Rcpp::Named("q1t2_sumdist") = out_sumdist);
-  //Rcpp::DataFrame df;
   return df;
 }

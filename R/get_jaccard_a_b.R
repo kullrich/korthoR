@@ -226,6 +226,8 @@ get_jaccard_a_b <- function(
                             kmer_counts_t_Int64=t_chunk,
                             k=k,
                             min_jaccard=min_jaccard,
+                            sparse_threshold=sparse_threshold,
+                            sparse_n=sparse_n,
                             ncores=threads,
                             debug=FALSE)
                     } else {
