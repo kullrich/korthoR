@@ -7,6 +7,9 @@
 #' @param kmer_counts_q kmer_counts
 #' @param k kmer length [default: 6]
 #' @param min_jaccard min jaccard distance to report [default: 0.01]
+#' @param sparse_threshold use kmer subset to evaluate change search strategy
+#' [default: 0.1]
+#' @param sparse_n number of kmer subset to get sparse threshold [default: 20]
 #' @param use_rcpp use rcpp jaccard distance calculation[ default: TRUE]
 #' @param use_sparse use rcpp sparse approach [default: TRUE]
 #' @param threads number of parallel threads [default: 1]
@@ -88,6 +91,8 @@ get_jaccard_from_self <- function(
     kmer_counts_q,
     k=6,
     min_jaccard=0.01,
+    sparse_threshold=0.1,
+    sparse_n=20,
     use_rcpp=TRUE,
     use_sparse=TRUE,
     threads=1,
@@ -209,6 +214,8 @@ get_jaccard_from_self <- function(
                             kmer_counts_t_Int64=t_chunk,
                             k=k,
                             min_jaccard=min_jaccard,
+                            sparse_threshold=sparse_threshold,
+                            sparse_n=sparse_n,
                             ncores=threads,
                             debug=FALSE)
                     } else {

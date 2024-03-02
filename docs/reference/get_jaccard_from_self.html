@@ -57,6 +57,8 @@ Only jaccard distances will be reported if threshold is met.</p>
 <span>  <span class="va">kmer_counts_q</span>,</span>
 <span>  k <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  min_jaccard <span class="op">=</span> <span class="fl">0.01</span>,</span>
+<span>  sparse_threshold <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  sparse_n <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  use_rcpp <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  use_sparse <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  threads <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -77,6 +79,15 @@ Only jaccard distances will be reported if threshold is met.</p>
 
 <dt>min_jaccard</dt>
 <dd><p>min jaccard distance to report [default: 0.01]</p></dd>
+
+
+<dt>sparse_threshold</dt>
+<dd><p>use kmer subset to evaluate change search strategy
+[default: 0.1]</p></dd>
+
+
+<dt>sparse_n</dt>
+<dd><p>number of kmer subset to get sparse threshold [default: 20]</p></dd>
 
 
 <dt>use_rcpp</dt>
@@ -123,16 +134,86 @@ Only jaccard distances will be reported if threshold is met.</p>
 <span class="r-in"><span>    kmer_counts_q<span class="op">=</span><span class="va">l</span>,</span></span>
 <span class="r-in"><span>    k<span class="op">=</span><span class="fl">6</span>,</span></span>
 <span class="r-in"><span>    min_jaccard<span class="op">=</span><span class="fl">0.01</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in korthoR::get_jaccard_from_self(kmer_counts_q = l, k = 6, min_jaccard = 0.01):</span> object 'sparse_threshold' not found</span>
 <span class="r-in"><span><span class="va">df</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> function (x, df1, df2, ncp, log = FALSE) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> {</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     if (missing(ncp)) </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         .Call(C_df, x, df1, df2, log)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     else .Call(C_dnf, x, df1, df2, ncp, log)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x7fb0e8dcc058&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:stats&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     qname  tname q1t2_jaccard  q1t2_mash  q1t2_ani q1t2_sumdist</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  U68496 U68497   0.52212389 0.06280164 0.9371984    0.3139535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  U68496 U68498   0.21985816 0.17006002 0.8299400    0.6395349</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  U68496 U68499   0.21985816 0.17006002 0.8299400    0.6395349</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  U68496 U68500   0.15436242 0.21980885 0.7801912    0.7325581</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  U68496 U68501   0.14666667 0.22721747 0.7727825    0.7441860</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6  U68496 U68502   0.08860759 0.30254833 0.6974517    0.8372093</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7  U68496 U68503   0.07500000 0.32824011 0.6717599    0.8604651</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8  U68496 U68504   0.16216216 0.21271558 0.7872844    0.7209302</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9  U68496 U68505   0.14666667 0.22721747 0.7727825    0.7441860</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10 U68496 U68506   0.16216216 0.21271558 0.7872844    0.7209302</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11 U68496 U68507   0.12418301 0.25165139 0.7483486    0.7790698</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12 U68496 U68508   0.06832298 0.34274200 0.6572580    0.8720930</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13 U68497 U68498   0.14666667 0.22721747 0.7727825    0.7441860</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14 U68497 U68499   0.17808219 0.19937513 0.8006249    0.6976744</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15 U68497 U68500   0.11688312 0.26066259 0.7393374    0.7906977</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16 U68497 U68501   0.11688312 0.26066259 0.7393374    0.7906977</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17 U68497 U68502   0.09554140 0.29104952 0.7089505    0.8255814</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18 U68497 U68503   0.07500000 0.32824011 0.6717599    0.8604651</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19 U68497 U68504   0.15436242 0.21980885 0.7801912    0.7325581</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20 U68497 U68505   0.13907285 0.23497081 0.7650292    0.7558140</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21 U68497 U68506   0.15436242 0.21980885 0.7801912    0.7325581</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22 U68497 U68507   0.10256410 0.28029310 0.7197069    0.8139535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23 U68497 U68508   0.10256410 0.28029310 0.7197069    0.8139535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24 U68498 U68499   0.34375000 0.11169294 0.8883071    0.4883721</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25 U68498 U68500   0.22857143 0.16476857 0.8352314    0.6279070</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 26 U68498 U68501   0.24637681 0.15466446 0.8453355    0.6046512</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 27 U68498 U68502   0.17006803 0.20591191 0.7940881    0.7093023</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28 U68498 U68503   0.13157895 0.24310250 0.7568975    0.7674419</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29 U68498 U68504   0.17808219 0.19937513 0.8006249    0.6976744</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 30 U68498 U68505   0.16216216 0.21271558 0.7872844    0.7209302</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 31 U68498 U68506   0.14666667 0.22721747 0.7727825    0.7441860</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32 U68498 U68507   0.17006803 0.20591191 0.7940881    0.7093023</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33 U68498 U68508   0.08860759 0.30254833 0.6974517    0.8372093</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34 U68499 U68500   0.45762712 0.07756054 0.9224395    0.3720930</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35 U68499 U68501   0.23741007 0.15963996 0.8403600    0.6162791</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 36 U68499 U68502   0.21985816 0.17006002 0.8299400    0.6395349</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37 U68499 U68503   0.10967742 0.27018899 0.7298110    0.8023256</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 38 U68499 U68504   0.17006803 0.20591191 0.7940881    0.7093023</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 39 U68499 U68505   0.16216216 0.21271558 0.7872844    0.7209302</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 40 U68499 U68506   0.15436242 0.21980885 0.7801912    0.7325581</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 41 U68499 U68507   0.17808219 0.19937513 0.8006249    0.6976744</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 42 U68499 U68508   0.12418301 0.25165139 0.7483486    0.7790698</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 43 U68500 U68501   0.17808219 0.19937513 0.8006249    0.6976744</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 44 U68500 U68502   0.15436242 0.21980885 0.7801912    0.7325581</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 45 U68500 U68503   0.09554140 0.29104952 0.7089505    0.8255814</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 46 U68500 U68504   0.08176101 0.31489966 0.6851003    0.8488372</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 47 U68500 U68505   0.08860759 0.30254833 0.6974517    0.8372093</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 48 U68500 U68506   0.08176101 0.31489966 0.6851003    0.8488372</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 49 U68500 U68507   0.10256410 0.28029310 0.7197069    0.8139535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 50 U68500 U68508   0.10967742 0.27018899 0.7298110    0.8023256</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 51 U68501 U68502   0.13907285 0.23497081 0.7650292    0.7558140</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 52 U68501 U68503   0.10256410 0.28029310 0.7197069    0.8139535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 53 U68501 U68504   0.14666667 0.22721747 0.7727825    0.7441860</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 54 U68501 U68505   0.08860759 0.30254833 0.6974517    0.8372093</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 55 U68501 U68506   0.13157895 0.24310250 0.7568975    0.7674419</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 56 U68501 U68507   0.11688312 0.26066259 0.7393374    0.7906977</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 57 U68501 U68508   0.09554140 0.29104952 0.7089505    0.8255814</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 58 U68502 U68503   0.10256410 0.28029310 0.7197069    0.8139535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 59 U68502 U68504   0.15436242 0.21980885 0.7801912    0.7325581</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 60 U68502 U68505   0.18620690 0.19308507 0.8069149    0.6860465</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 61 U68502 U68506   0.14666667 0.22721747 0.7727825    0.7441860</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 62 U68502 U68507   0.17808219 0.19937513 0.8006249    0.6976744</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 63 U68502 U68508   0.10256410 0.28029310 0.7197069    0.8139535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 64 U68503 U68504   0.10256410 0.28029310 0.7197069    0.8139535</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 65 U68503 U68505   0.09554140 0.29104952 0.7089505    0.8255814</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 66 U68503 U68506   0.06172840 0.35862703 0.6413730    0.8837209</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 67 U68503 U68507   0.07500000 0.32824011 0.6717599    0.8604651</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 68 U68503 U68508   0.05521472 0.37618712 0.6238129    0.8953488</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 69 U68504 U68505   0.62264151 0.04411543 0.9558846    0.2325581</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 70 U68504 U68506   0.63809524 0.04160911 0.9583909    0.2209302</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 71 U68504 U68507   0.42148760 0.08708694 0.9129131    0.4069767</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 72 U68504 U68508   0.14666667 0.22721747 0.7727825    0.7441860</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 73 U68505 U68506   0.44537815 0.08067590 0.9193241    0.3837209</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 74 U68505 U68507   0.35433071 0.10794747 0.8920525    0.4767442</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 75 U68505 U68508   0.13157895 0.24310250 0.7568975    0.7674419</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 76 U68506 U68507   0.49565217 0.06854934 0.9314507    0.3372093</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 77 U68506 U68508   0.12418301 0.25165139 0.7483486    0.7790698</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 78 U68507 U68508   0.10256410 0.28029310 0.7197069    0.8139535</span>
 <span class="r-in"><span><span class="co"># to use Int64 kmers;</span></span></span>
 <span class="r-in"><span><span class="co"># use:</span></span></span>
 <span class="r-in"><span><span class="co"># count_kmers(..., aa2int=TRUE);</span></span></span>
@@ -237,7 +318,6 @@ Only jaccard distances will be reported if threshold is met.</p>
 <span class="r-in"><span>    k<span class="op">=</span><span class="fl">6</span>,</span></span>
 <span class="r-in"><span>    min_jaccard<span class="op">=</span><span class="fl">0.01</span>,</span></span>
 <span class="r-in"><span>    threads<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in korthoR::get_jaccard_from_self(kmer_counts_q = l, k = 6, min_jaccard = 0.01,     threads = 2):</span> object 'sparse_threshold' not found</span>
 <span class="r-in"><span><span class="va">df</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     qname  tname q1t2_jaccard  q1t2_mash  q1t2_ani q1t2_sumdist</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  U68496 U68497   0.52212389 0.06280164 0.9371984    0.3139535</span>
@@ -327,7 +407,6 @@ Only jaccard distances will be reported if threshold is met.</p>
 <span class="r-in"><span>    min_jaccard<span class="op">=</span><span class="fl">0.01</span>,</span></span>
 <span class="r-in"><span>    threads<span class="op">=</span><span class="fl">2</span>,</span></span>
 <span class="r-in"><span>    num_per_chunk_q<span class="op">=</span><span class="fl">2</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in korthoR::get_jaccard_from_self(kmer_counts_q = l, k = 6, min_jaccard = 0.01,     threads = 2, num_per_chunk_q = 2):</span> object 'sparse_threshold' not found</span>
 <span class="r-in"><span><span class="va">df</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     qname  tname q1t2_jaccard  q1t2_mash  q1t2_ani q1t2_sumdist</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1  U68496 U68497   0.52212389 0.06280164 0.9371984    0.3139535</span>

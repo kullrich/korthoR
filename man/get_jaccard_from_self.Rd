@@ -8,6 +8,8 @@ get_jaccard_from_self(
   kmer_counts_q,
   k = 6,
   min_jaccard = 0.01,
+  sparse_threshold = 0.1,
+  sparse_n = 20,
   use_rcpp = TRUE,
   use_sparse = TRUE,
   threads = 1,
@@ -21,6 +23,11 @@ get_jaccard_from_self(
 \item{k}{kmer length [default: 6]}
 
 \item{min_jaccard}{min jaccard distance to report [default: 0.01]}
+
+\item{sparse_threshold}{use kmer subset to evaluate change search strategy
+[default: 0.1]}
+
+\item{sparse_n}{number of kmer subset to get sparse threshold [default: 20]}
 
 \item{use_rcpp}{use rcpp jaccard distance calculation[ default: TRUE]}
 

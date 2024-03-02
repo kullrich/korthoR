@@ -434,8 +434,6 @@ std::vector<double> getJaccardByIntegerVector(
   const int seq_q_i_idx,
   const int seq_t_i_idx,
   const int k) {
-  std::cout << "ni: " << seq_q_i_idx << std::endl;
-  std::cout << "mj: " << seq_t_i_idx << std::endl;
   std::vector<double> out(6);
   out[0] = static_cast<double>(seq_q_i_idx);
   out[1] = static_cast<double>(seq_t_i_idx);
