@@ -68,6 +68,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_jaccard_single
+Rcpp::DataFrame rcpp_jaccard_single(Rcpp::List kmer_counts_q, Rcpp::List kmer_counts_t, int k, double min_jaccard, double sparse_threshold, int sparse_n, bool debug);
+RcppExport SEXP _korthoR_rcpp_jaccard_single(SEXP kmer_counts_qSEXP, SEXP kmer_counts_tSEXP, SEXP kSEXP, SEXP min_jaccardSEXP, SEXP sparse_thresholdSEXP, SEXP sparse_nSEXP, SEXP debugSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type kmer_counts_q(kmer_counts_qSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type kmer_counts_t(kmer_counts_tSEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< double >::type min_jaccard(min_jaccardSEXP);
+    Rcpp::traits::input_parameter< double >::type sparse_threshold(sparse_thresholdSEXP);
+    Rcpp::traits::input_parameter< int >::type sparse_n(sparse_nSEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_jaccard_single(kmer_counts_q, kmer_counts_t, k, min_jaccard, sparse_threshold, sparse_n, debug));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_jaccard_single_Int64
+Rcpp::DataFrame rcpp_jaccard_single_Int64(Rcpp::List kmer_counts_q_Int64, Rcpp::List kmer_counts_t_Int64, int k, double min_jaccard, double sparse_threshold, int sparse_n, bool debug);
+RcppExport SEXP _korthoR_rcpp_jaccard_single_Int64(SEXP kmer_counts_q_Int64SEXP, SEXP kmer_counts_t_Int64SEXP, SEXP kSEXP, SEXP min_jaccardSEXP, SEXP sparse_thresholdSEXP, SEXP sparse_nSEXP, SEXP debugSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type kmer_counts_q_Int64(kmer_counts_q_Int64SEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type kmer_counts_t_Int64(kmer_counts_t_Int64SEXP);
+    Rcpp::traits::input_parameter< int >::type k(kSEXP);
+    Rcpp::traits::input_parameter< double >::type min_jaccard(min_jaccardSEXP);
+    Rcpp::traits::input_parameter< double >::type sparse_threshold(sparse_thresholdSEXP);
+    Rcpp::traits::input_parameter< int >::type sparse_n(sparse_nSEXP);
+    Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_jaccard_single_Int64(kmer_counts_q_Int64, kmer_counts_t_Int64, k, min_jaccard, sparse_threshold, sparse_n, debug));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_jaccard_sparse
 Rcpp::DataFrame rcpp_jaccard_sparse(Rcpp::List kmer_counts_q, Rcpp::List kmer_counts_t, int k, double min_jaccard, double sparse_threshold, int sparse_n, int ncores, bool debug);
 RcppExport SEXP _korthoR_rcpp_jaccard_sparse(SEXP kmer_counts_qSEXP, SEXP kmer_counts_tSEXP, SEXP kSEXP, SEXP min_jaccardSEXP, SEXP sparse_thresholdSEXP, SEXP sparse_nSEXP, SEXP ncoresSEXP, SEXP debugSEXP) {
@@ -142,6 +176,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_korthoR_rcpp_count_mers", (DL_FUNC) &_korthoR_rcpp_count_mers, 2},
     {"_korthoR_rcpp_jaccard_a_b", (DL_FUNC) &_korthoR_rcpp_jaccard_a_b, 5},
     {"_korthoR_rcpp_jaccard_a_b_Int64", (DL_FUNC) &_korthoR_rcpp_jaccard_a_b_Int64, 5},
+    {"_korthoR_rcpp_jaccard_single", (DL_FUNC) &_korthoR_rcpp_jaccard_single, 7},
+    {"_korthoR_rcpp_jaccard_single_Int64", (DL_FUNC) &_korthoR_rcpp_jaccard_single_Int64, 7},
     {"_korthoR_rcpp_jaccard_sparse", (DL_FUNC) &_korthoR_rcpp_jaccard_sparse, 8},
     {"_korthoR_rcpp_jaccard_sparse_Int64", (DL_FUNC) &_korthoR_rcpp_jaccard_sparse_Int64, 8},
     {"_korthoR_rcpp_jaccard_sparse_a_b", (DL_FUNC) &_korthoR_rcpp_jaccard_sparse_a_b, 6},

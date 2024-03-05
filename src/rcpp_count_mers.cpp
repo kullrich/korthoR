@@ -1,7 +1,6 @@
 #define RCPPTHREAD_OVERRIDE_COUT 1    // std::cout override
 #define RCPPTHREAD_OVERRIDE_CERR 1    // std::cerr override
-//#include <Rcpp.h>
-#include <RcppArmadillo.h>
+#include <Rcpp.h>
 #include <RcppThread.h>
 #include <string.h>
 #include "kmer_utils.h"

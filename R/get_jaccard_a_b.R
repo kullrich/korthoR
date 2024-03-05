@@ -13,7 +13,9 @@
 #' @param sparse_n number of kmer subset to get sparse threshold [default: 20]
 #' @param use_rcpp use rcpp jaccard distance calculation[ default: TRUE]
 #' @param use_sparse use rcpp sparse approach [default: TRUE]
-#' @param threads number of parallel threads [default: 1]
+#' @param use_single use single threaded rcpp and parallel chunk processing
+#' [FALSE]
+#' @param threads number of parallel threads per chunk [default: 1]
 #' @param num_per_chunk_q specify max number per chunk q [default: 50000]
 #' @param num_per_chunk_t specify max number per chunk t [default: 50000]
 #' @param aa2int convert aa to Int64 [default: FALSE]
@@ -104,6 +106,7 @@ get_jaccard_a_b <- function(
     sparse_n=20,
     use_rcpp=TRUE,
     use_sparse=TRUE,
+    use_single=FALSE,
     threads=1,
     num_per_chunk_q=50000,
     num_per_chunk_t=50000,
@@ -200,24 +203,63 @@ get_jaccard_a_b <- function(
         kmer_counts_t_chunks <- korthoR::split_list_into_chunks(
             l=kmer_counts_t, num_per_chunk=num_per_chunk_t)
         OUT <- NULL
-        for(q_chunk in kmer_counts_q_chunks){
-            for(t_chunk in kmer_counts_t_chunks){
+        if (use_single) {
+            cl <- parallel::makeCluster(threads)
+            doParallel::registerDoParallel(cl)
+            clusterEvalQ(cl, library(korthoR))
+            OUT <- foreach(q_chunk=kmer_counts_q_chunks,
+            .packages = c('foreach', 'korthoR', 'Rcpp'),
+            .combine=rbind) %:%
+            foreach(t_chunk=kmer_counts_t_chunks,
+            .packages = c('foreach', 'korthoR', 'Rcpp'),
+            .combine=rbind) %dopar% {
+                if (aa2int) {
+                        q_chunk_t_chunk_OUT <-
+                            korthoR::rcpp_jaccard_single_Int64(
+                            kmer_counts_q_Int64=q_chunk,
+                            kmer_counts_t_Int64=t_chunk,
+                            k=k,
+                            min_jaccard=min_jaccard,
+                            sparse_threshold=sparse_threshold,
+                            sparse_n=sparse_n,
+                            debug=FALSE)
+                } else{
+                        q_chunk_t_chunk_OUT <-
+                            korthoR::rcpp_jaccard_single(
+                            kmer_counts_q_Int64=q_chunk,
+                            kmer_counts_t_Int64=t_chunk,
+                            k=k,
+                            min_jaccard=min_jaccard,
+                            sparse_threshold=sparse_threshold,
+                            sparse_n=sparse_n,
+                            debug=FALSE)
+                }
+                return(q_chunk_t_chunk_OUT)
+            }
+            parallel::stopCluster(cl)
+        } else {
+            OUT <- foreach(q_chunk=kmer_counts_q_chunks,
+                .packages = c('foreach', 'korthoR', 'Rcpp'),
+                .combine=rbind) %:%
+                foreach(t_chunk=kmer_counts_t_chunks,
+                .packages = c('foreach', 'korthoR', 'Rcpp'),
+                .combine=rbind) %do% {
                 if(!use_sparse){
-                  if (aa2int) {
-                      q_chunk_t_chunk_OUT <- korthoR::rcpp_jaccard_a_b_Int64(
-                          kmer_counts_q_Int64=q_chunk,
-                          kmer_counts_t_Int64=t_chunk,
-                          k=k,
-                          min_jaccard=min_jaccard,
-                          ncores=threads)
-                  } else{
-                      q_chunk_t_chunk_OUT <- korthoR::rcpp_jaccard_a_b(
-                          kmer_counts_q=q_chunk,
-                          kmer_counts_t=t_chunk,
-                          k=k,
-                          min_jaccard=min_jaccard,
-                          ncores=threads)
-                  }
+                    if (aa2int) {
+                        q_chunk_t_chunk_OUT <- korthoR::rcpp_jaccard_a_b_Int64(
+                            kmer_counts_q_Int64=q_chunk,
+                            kmer_counts_t_Int64=t_chunk,
+                            k=k,
+                            min_jaccard=min_jaccard,
+                            ncores=threads)
+                    } else{
+                        q_chunk_t_chunk_OUT <- korthoR::rcpp_jaccard_a_b(
+                            kmer_counts_q=q_chunk,
+                            kmer_counts_t=t_chunk,
+                            k=k,
+                            min_jaccard=min_jaccard,
+                            ncores=threads)
+                    }
                 } else {
                     if (aa2int) {
                         q_chunk_t_chunk_OUT <-
@@ -241,8 +283,8 @@ get_jaccard_a_b <- function(
                             ncores=threads,
                             debug=FALSE)
                     }
+                    return(q_chunk_t_chunk_OUT)
                 }
-                OUT <- rbind(OUT, q_chunk_t_chunk_OUT)
             }
         }
         OUT[["qname"]] <- sub("q_", "",OUT[["qname"]])

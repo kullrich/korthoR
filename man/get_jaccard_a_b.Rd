@@ -13,6 +13,7 @@ get_jaccard_a_b(
   sparse_n = 20,
   use_rcpp = TRUE,
   use_sparse = TRUE,
+  use_single = FALSE,
   threads = 1,
   num_per_chunk_q = 50000,
   num_per_chunk_t = 50000,
@@ -37,7 +38,10 @@ get_jaccard_a_b(
 
 \item{use_sparse}{use rcpp sparse approach [default: TRUE]}
 
-\item{threads}{number of parallel threads [default: 1]}
+\item{use_single}{use single threaded rcpp and parallel chunk processing
+[FALSE]}
+
+\item{threads}{number of parallel threads per chunk [default: 1]}
 
 \item{num_per_chunk_q}{specify max number per chunk q [default: 50000]}
 

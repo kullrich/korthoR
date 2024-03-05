@@ -3,8 +3,7 @@
 #define RCPPTHREAD_OVERRIDE_COUT 1    // std::cout override
 #define RCPPTHREAD_OVERRIDE_CERR 1    // std::cerr override
 
-//#include <Rcpp.h>
-#include <RcppArmadillo.h>
+#include <Rcpp.h>
 #include <RcppThread.h>
 #include <algorithm>
 #include <chrono>
@@ -140,14 +139,6 @@ std::vector<double> getJaccardByPairInt64(
   const std::vector<std::vector<int>>& seq_t_kmers_counts_sorted,
   const int k);
 std::int64_t aminoAcidSequenceToInt(const std::string& sequence);
-arma::imat changeValueAndUpdateSparseImat(
-  const arma::imat& sp_mat_logical,
-  int row,
-  int col,
-  int newValue);
-bool checkValueSparseImat(const arma::imat& sp_mat_logical,
-  int row,
-  int col);
 std::vector<double> getJaccardByIntegerVector(
   const std::vector<std::string> seq_q_i_kmers_sorted,
   const std::vector<std::string> seq_t_i_kmers_sorted,

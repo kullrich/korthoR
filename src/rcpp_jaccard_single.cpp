@@ -11,8 +11,8 @@ using namespace Rcpp;
 
 //' @useDynLib korthoR, .registration = TRUE
 //' @import Rcpp
-//' @title rcpp_jaccard_sparse
-//' @name rcpp_jaccard_sparse
+//' @title rcpp_jaccard_single
+//' @name rcpp_jaccard_single
 //' @description returns jaccard
 //' @return list
 //' @param kmer_counts_q list [mandatory]
@@ -21,7 +21,6 @@ using namespace Rcpp;
 //' @param min_jaccard min jaccard distance to report [default: 0.01]
 //' @param sparse_threshold use kmer subset to evaluate change search strategy [default: 0.1]
 //' @param sparse_n number of kmer subset to get sparse threshold [default: 20]
-//' @param ncores number of cores [default: 1]
 //' @param debug print to console [default: FALSE]
 //' @examples
 //' ## load example sequence data
@@ -29,28 +28,26 @@ using namespace Rcpp;
 //' l <- hiv |>
 //'     MSA2dist::cds2aa() |>
 //'     korthoR::count_kmers(k=6)
-//' d <- korthoR::rcpp_jaccard_sparse(
+//' d <- korthoR::rcpp_jaccard_single(
 //'     kmer_counts_q=l,
 //'     kmer_counts_t=l,
 //'     k=6,
 //'     min_jaccard=0.01,
 //'     sparse_threshold=0.1,
-//'     sparse_n=20,
-//'     ncores=1,
+//'     sparse_n=100,
 //'     debug=FALSE)
 //' d
-//' @export rcpp_jaccard_sparse
+//' @export rcpp_jaccard_single
 //' @author Kristian K Ullrich
 
 // [[Rcpp::export]]
-Rcpp::DataFrame rcpp_jaccard_sparse(
+Rcpp::DataFrame rcpp_jaccard_single(
   Rcpp::List kmer_counts_q,
   Rcpp::List kmer_counts_t,
   int k=6,
   double min_jaccard=0.01,
   double sparse_threshold=0.1,
   int sparse_n=20,
-  int ncores=1,
   bool debug=false) {
   //get sizes
   int n = kmer_counts_q.size();
@@ -83,12 +80,12 @@ Rcpp::DataFrame rcpp_jaccard_sparse(
   auto start_QkmerMap = std::chrono::steady_clock::now();
   std::vector<std::map<std::string, int>> QkmerMap_n(n);
   QkmerMap_n.resize(n);
-  RcppThread::parallelFor(0, n, [&] (int i) {
+  for (int i=0; i < n; ++i) {
     std::map<std::string, int> QkmerMap_i;
     std::vector<std::string> Qkmers_i_sorted = Qkmers_sorted[i];
     QkmerMap_i = vectorToMap(Qkmers_i_sorted, i);
     QkmerMap_n[i] = QkmerMap_i;
-  }, ncores);
+  }
   //combine maps
   QkmerMap = combineMaps(QkmerMap_n);
   auto end_QkmerMap = std::chrono::steady_clock::now();
@@ -102,12 +99,12 @@ Rcpp::DataFrame rcpp_jaccard_sparse(
   auto start_TkmerMap = std::chrono::steady_clock::now();
   std::vector<std::map<std::string, int>> TkmerMap_m(m);
   TkmerMap_m.resize(m);
-  RcppThread::parallelFor(0, m, [&] (int j) {
+  for (int j = 0; j < m; ++j) {
     std::map<std::string, int> TkmerMap_j;
     std::vector<std::string> Tkmers_j_sorted = Tkmers_sorted[j];
     TkmerMap_j = vectorToMap(Tkmers_j_sorted, j);
     TkmerMap_m[j] = TkmerMap_j;
-  }, ncores);
+  }
   //combine maps
   TkmerMap = combineMaps(TkmerMap_m);
   auto end_TkmerMap = std::chrono::steady_clock::now();
@@ -157,18 +154,18 @@ Rcpp::DataFrame rcpp_jaccard_sparse(
     if (use_sparse) {
       Q_T_pairs = findPairs_sparse(QkmerMap, TkmerMap, n);
     } else {
-      RcppThread::parallelFor(0, n, [&] (int i) {
+      for (int i = 0; i < n; ++i) {
         Q_T_pairs[i] = findPairs(QkmerMap_n[i], TkmerMap);
-      }, ncores);
+      }
     }
   } else {
     std::vector<std::vector<int>> T_Q_pairs(m);
     if (use_sparse) {
       T_Q_pairs = findPairs_sparse(TkmerMap, QkmerMap, m);
     } else {
-      RcppThread::parallelFor(0, m, [&] (int j) {
+      for (int j = 0; j < m; ++j) {
         T_Q_pairs[j] = findPairs(TkmerMap_m[j], QkmerMap);
-      }, ncores);
+      }
     }
     //transpose T_Q_hits to get Q_T_hits
     Q_T_pairs = transposeTQ(T_Q_pairs, n);
@@ -191,7 +188,7 @@ Rcpp::DataFrame rcpp_jaccard_sparse(
   std::vector<std::vector<double>> Qni_Tmj_distances(
       candidatePairs_ni_mj_size,
       std::vector<double>(6, 0.0));
-  RcppThread::parallelFor(0, candidatePairs_ni_mj_size, [&] (int ni_mj) {
+  for (int ni_mj = 0; ni_mj < candidatePairs_ni_mj_size; ++ni_mj) {
     int Qni = candidatePairs_ni[ni_mj];
     int Tmj = candidatePairs_mj[ni_mj];
     Qni_Tmj_distances[ni_mj]=getJaccardByIntegerVector(
@@ -202,7 +199,7 @@ Rcpp::DataFrame rcpp_jaccard_sparse(
       Qni,
       Tmj,
       k);
-  }, ncores);
+  }
   auto end_calcDist = std::chrono::steady_clock::now();
   auto duration_calcDist = std::chrono::duration_cast<std::chrono::milliseconds>(end_calcDist - start_calcDist);
   if (debug) {

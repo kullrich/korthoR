@@ -1,7 +1,6 @@
 #define RCPPTHREAD_OVERRIDE_COUT 1    // std::cout override
 #define RCPPTHREAD_OVERRIDE_CERR 1    // std::cerr override
-//#include <Rcpp.h>
-#include <RcppArmadillo.h>
+#include <Rcpp.h>
 #include <RcppThread.h>
 #include <algorithm>
 #include <chrono>
@@ -712,23 +711,6 @@ std::int64_t aminoAcidSequenceToInt(
     numericRepresentation = numericRepresentation * 22 + aminoAcidToInt(aa);
   }
   return numericRepresentation;
-}
-
-arma::imat changeValueAndUpdateSparseImat(
-  const arma::imat& sp_mat_logical,
-  int row,
-  int col,
-  int newValue) {
-  arma::imat modified_mat = sp_mat_logical;
-  modified_mat(row, col) = newValue;
-  return modified_mat;
-}
-
-bool checkValueSparseImat(
-  const arma::imat& sp_mat_logical,
-  int row,
-  int col) {
-  return sp_mat_logical(row, col) == 1;
 }
 
 std::vector<int> findPairs(
